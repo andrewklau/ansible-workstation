@@ -1,0 +1,13 @@
+# workstation.yaml
+#
+# Ansible playbook for configuring workstation
+#
+#
+
+- name: Workstation Setup
+  hosts: localhost
+  user: root
+  tasks:
+    - name: install python and deps for ansible modules
+      raw: dnf install -y python2 python2-dnf libselinux-python libsemanage-python python2-firewall
+    - include: tasks/main.yaml

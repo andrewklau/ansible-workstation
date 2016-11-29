@@ -1,0 +1,72 @@
+ - name: install the rpmfusion repo packages
+   dnf: name={{ item }}
+    state=present
+   with_items:
+     - http://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-25.noarch.rpm
+     - http://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-25.noarch.rpm
+
+ - name: install Google Chrome repo
+   copy: src=google-chrome.repo dest=/etc/yum.repos.d/
+
+ - name: import Google Chrome signing key
+   rpm_key: key=https://dl-ssl.google.com/linux/linux_signing_key.pub state=present
+
+ - name: install packages
+   dnf: name={{item}} state=installed
+   with_items:
+    - nano
+    - docker
+    - php
+    - git
+    - nodejs
+    - npm
+    - composer
+    - tuned
+    - tuned-utils
+    - powertop
+    - google-chrome-stable
+    - awscli
+    - python2-boto3
+
+# PHP tools
+ - name: install php-cs-fixer
+   raw: composer global require friendsofphp/php-cs-fixer
+
+# Tuned
+ - name: enable tuned
+   service:
+    name: tuned
+    state: started
+    enabled: yes
+
+ - name: set tuned profiles
+   command: /usr/sbin/tuned-adm profile balanced
+
+ # Firewalld
+ - name: disable firewalld ssh service - permanent
+   firewalld:
+    service: ssh
+    permanent: yes
+    state: disabled
+
+ # Docker
+ - name: enable docker
+   service:
+    name: docker
+    state: started
+    enabled: yes
+
+ # PowerTop
+ - name: Verify powertop is installed
+   dnf: name={{item}} state=installed
+   with_items:
+    - powertop
+
+ - name: disable usb autosuspend
+   raw: echo "options usbcore autosuspend=-1" | tee /etc/modprobe.d/disable-usb-autosuspend.conf > /dev/null
+
+ - name: Start and enable powertop.service
+   service:
+     name: powertop
+     state: started
+     enabled: yes
